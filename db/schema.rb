@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_03_033257) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_16_020402) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_03_033257) do
     t.datetime "updated_at", null: false
     t.index ["key"], name: "index_api_keys_on_key", unique: true
     t.index ["user_id"], name: "index_api_keys_on_user_id"
+  end
+
+  create_table "external_accounts", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "provider"
+    t.string "external_user_id"
+    t.text "access_token"
+    t.text "refresh_token"
+    t.datetime "token_expires_at"
+    t.jsonb "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "external_shop_id"
+    t.index ["user_id"], name: "index_external_accounts_on_user_id"
   end
 
   create_table "queue_items", force: :cascade do |t|
@@ -41,6 +55,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_03_033257) do
     t.index ["user_id"], name: "index_queue_items_on_user_id"
   end
 
+  create_table "sync_logs", force: :cascade do |t|
+    t.bigint "external_account_id", null: false
+    t.string "status"
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.text "message"
+    t.jsonb "metadata"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_account_id"], name: "index_sync_logs_on_external_account_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -54,5 +80,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_03_033257) do
   end
 
   add_foreign_key "api_keys", "users"
+  add_foreign_key "external_accounts", "users"
   add_foreign_key "queue_items", "users"
+  add_foreign_key "sync_logs", "external_accounts"
 end

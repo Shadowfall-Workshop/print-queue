@@ -1,0 +1,16 @@
+{
+  "name": "Rails 8 + Postgres",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "forwardPorts": [3000, 5432],
+  "postCreateCommand": "bundle install && sudo service postgresql start && bin/setup || true",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rebornix.Ruby",
+        "castwide.solargraph"
+      ]
+    }
+  }
+}

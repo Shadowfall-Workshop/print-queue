@@ -25,6 +25,10 @@ module PrintQueue
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
 
+    # load lib files
+    config.autoload_paths << Rails.root.join("app/lib")
+    config.eager_load_paths << Rails.root.join("app/lib")
+
     # XXX Disable the origin check to fix `HTTP Origin header didn't match request.base_url` errors when running in Github
     # Codespaces. This is necessary because Codespaces sets the Origin header incorrectly.
     if ENV["CODESPACES"] == "true"
