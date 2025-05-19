@@ -8,8 +8,17 @@ default: &default
   port: 5432
 
 development:
-  <<: *default
-  database: print_queue_development
+  primary:
+    <<: *default
+    database: print_queue_development
+  cable:
+    <<: *default
+    database: print_queue_development_cable
+    migrations_paths: db/cable_migrate
+  queue:
+    <<: *default
+    database: print_queue_development_queue
+    migrations_paths: db/queue_migrate
 
 test:
   <<: *default
