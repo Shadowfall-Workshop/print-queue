@@ -130,7 +130,7 @@ class EtsyService
 
     queue_item.name = txn['title']
     queue_item.reference_id = reference_id
-    queue_item.status = 0
+    queue_item.status = queue_item.new_record? ? 0 : queue_item.status
     queue_item.priority = nil
     queue_item.due_date = Time.at(txn['expected_ship_date'])
     queue_item.notes = receipt['message_from_buyer']
