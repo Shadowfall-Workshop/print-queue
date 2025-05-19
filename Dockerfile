@@ -19,6 +19,12 @@ ENV BUNDLE_WITHOUT="development test"
 ARG SECRET_KEY_BASE
 ENV SECRET_KEY_BASE=$SECRET_KEY_BASE
 
+ARG ETSY_API_KEYSTRING
+ENV ETSY_API_KEYSTRING=$ETSY_API_KEYSTRING
+
+ARG ETSY_API_SECRET
+ENV ETSY_API_SECRET=$ETSY_API_SECRET
+
 # Copy Gemfiles and install dependencies
 COPY Gemfile Gemfile.lock ./
 RUN bundle install --jobs=4 --retry=3
