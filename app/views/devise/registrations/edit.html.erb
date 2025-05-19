@@ -47,3 +47,19 @@
 <%= bootstrap_form_with model: @api_key do |f| %>
     <%= f.text_field :description, label_as_placeholder: true, append: f.primary('Generate API Key'), input_group_class: 'input-group'  %>
 <% end %>
+
+<h3>Etsy Integration</h3>
+
+<% etsy_account = current_user.external_accounts.find { |acc| acc.provider == "etsy" } %>
+
+<% if etsy_account.present? %>
+  <p><strong>Connected to Etsy!</strong></p>
+  <p>Token expires at: <%= etsy_account.token_expires_at.strftime("%F %T %Z") if etsy_account.token_expires_at %></p>
+  <%= link_to "Disconnect Etsy", oauth_etsy_disconnect_path, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } %>
+  <% if user_signed_in? && current_user.external_accounts.find_by(provider: "etsy") %>
+    <%= button_to "Sync Etsy Orders", sync_etsy_orders_users_path, method: :post, class: "btn btn-primary mb-3" %>
+  <% end %>
+<% else %>
+  <p>Not connected to Etsy yet.</p>
+  <%= link_to "Connect Etsy", oauth_etsy_connect_path %>
+<% end %>

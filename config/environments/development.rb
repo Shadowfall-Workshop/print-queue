@@ -3,8 +3,13 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
   
-  # Add Github Codespace base URL
-  config.action_controller.default_url_options = { host: 'studious-giggle-44955rqq9g3j4j4-3000.app.github.dev' }
+  # Allow GitHub Codespace requests
+  config.hosts << /.*\.app\.github\.dev/
+
+  # Optional: set default host for URL generation
+  config.action_controller.default_url_options = {
+    host: 'laughing-space-disco-x5x4gqr7799whgqx-3000.app.github.dev'
+  }
   
   # Make code changes take effect immediately without server restart.
   config.enable_reloading = true
