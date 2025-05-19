@@ -1,6 +1,12 @@
  Rails.application.routes.draw do
   devise_for :users
   
+  resources :users, only: [] do
+    collection do
+      post :sync_etsy_orders
+    end
+  end
+
   # Root path
   root 'queue_items#index'
 
