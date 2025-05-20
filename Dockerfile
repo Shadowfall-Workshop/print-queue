@@ -35,7 +35,8 @@ COPY . .
 # Precompile assets and run database migrations
 RUN bundle exec rails assets:precompile
 
-RUN bundle exec rails db:create
+# Ensure all databases are created
+RUN bundle exec rails db:prepare
 RUN bundle exec rails db:migrate
 
 # Expose Railway's required port
