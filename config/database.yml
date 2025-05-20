@@ -29,10 +29,6 @@ production:
     adapter: postgresql
     encoding: unicode
     url: <%= ENV["DATABASE_URL"] %>
-    host: <%= ENV["DATABASE_HOST"] %>
-    database: <%= ENV["DATABASE_NAME"] %>
-    username: <%= ENV["DATABASE_USER"] %>
-    password: <%= ENV["DATABASE_PASSWORD"] %>
     pool: 5
   cable:
     <<: *primary_production
@@ -40,7 +36,7 @@ production:
     migrations_paths: db/cable_migrate
   queue:
     <<: *primary_production
-    database: app_production_queue
+    url: <%= ENV["SOLID_QUEUE_DATABASE_URL"] %>
     migrations_paths: db/queue_migrate
   cache:
     <<: *primary_production
