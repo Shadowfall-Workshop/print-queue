@@ -1,2 +1,4 @@
 web: bin/rails server -p 3000
 css: bin/rails dartsass:watch
+worker:  bundle exec bin/jobs --scheduler --recurring_schedule_file=config/recurring.yml
+
