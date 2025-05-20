@@ -1,20 +1,26 @@
 #!/bin/bash
 set -e
 
-# Wait for database
+# Wait for database to be ready
+echo ">>> Waiting for the database to be ready..."
 until pg_isready -h "$DATABASE_HOST" -p 5432 -U "$DATABASE_USER"; do
   echo "Waiting for database to be ready..."
   sleep 2
 done
 
-echo "Running primary DB migrations..."
+# Prepare database (creates if not exists + runs migrations)
+echo ">>> Running primary DB migrations..."
 bundle exec rails db:migrate
 
-echo "Installing SolidQueue migrations if needed..."
-bundle exec rails solid_queue:install:migrations
+# Copy SolidQueue migrations (if not already copied)
+echo ">>> Copying SolidQueue migrations if needed..."
+mkdir -p db/queue_migrate
+cp -n $(bundle show solid_queue)/db/migrate/*.rb db/queue_migrate/ || true
 
-echo "Running queue DB migrations..."
+# Run queue-specific migrations
+echo ">>> Running queue DB migrations..."
 bundle exec rails db:migrate:queue --trace
 
-echo "Starting server..."
+# Start the application server
+echo ">>> Starting server..."
 bundle exec puma -C config/puma.rb
