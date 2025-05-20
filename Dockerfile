@@ -9,6 +9,7 @@ RUN apt-get update -qq && apt-get install -y \
   build-essential \
   libpq-dev \
   curl \
+  postgresql-client \
   && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables for production
