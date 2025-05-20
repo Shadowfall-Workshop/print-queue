@@ -6,11 +6,8 @@ until pg_isready -h "$DATABASE_HOST" -p 5432 -U "$DATABASE_USER"; do
   sleep 1
 done
 
-echo ">>> Running database migrations..."
-bundle exec rails db:migrate
-bundle exec rails db:migrate:queue
-bundle exec rails db:migrate:cable
-bundle exec rails db:migrate:cache
+echo "Running DB setup..."
+bundle exec rails db:prepare
 
 echo ">>> Precompiling assets..."
 bundle exec rails assets:precompile
