@@ -1,17 +1,17 @@
 #!/bin/bash
 set -e
 
-echo ">>> Waiting for the database to be ready..."
+# Wait for database
 until pg_isready -h "$DATABASE_HOST" -p 5432 -U "$DATABASE_USER"; do
-  sleep 1
+  echo "Waiting for database to be ready..."
+  sleep 2
 done
 
-echo "Running migrations..."
-bundle exec rails db:migrate
-bundle exec rails db:migrate:queue
+echo "Running primary DB migrations..."
+VERBOSE=true bundle exec rails db:migrate
 
-echo ">>> Precompiling assets..."
-bundle exec rails assets:precompile
+echo "Running queue DB migrations..."
+VERBOSE=true bundle exec rails db:migrate:queue
 
-echo ">>> Starting the server..."
-exec "$@"
+echo "Starting server..."
+bundle exec puma -C config/puma.rb
