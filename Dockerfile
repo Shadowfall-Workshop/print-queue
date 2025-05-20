@@ -38,5 +38,12 @@ RUN bundle exec rails assets:precompile
 # Expose Railway's required port
 EXPOSE 8080
 
-# Start the Rails server on port 8080
+# Copy entrypoint script
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Set entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# Default command (what the entrypoint will exec at the end)
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "8080"]
