@@ -43,7 +43,6 @@ class EtsyService
 
   # Fetch shop info
   def fetch_shop_info
-
     # Refresh token if expired
     token = access_token
 
@@ -74,11 +73,11 @@ class EtsyService
   # Fetch receipts (orders) from Etsy
   def fetch_receipts
     return unless @external_account&.access_token && @external_account&.external_shop_id
-    
+
     # Refresh token if expired
     token = access_token
-    
-    # Create the API URL
+
+  # Create the API URL
   min_created = (Time.now - 48.hours).to_i
   max_created = (Time.now - 5.minutes).to_i
 
@@ -117,29 +116,41 @@ class EtsyService
   private
 
   def create_or_update_queue_item(user_id, receipt, txn)
-    # Look up existing queue item by some unique reference, e.g. receipt_id + transaction_id
     reference_id = "Etsy Order: #{receipt['receipt_id']}"
 
-    queue_item = QueueItem.find_or_initialize_by(order_item_id: txn['transaction_id'], user_id: user_id)
-    variations = txn['variations'].map do |variation|
-      {
-        'title' => variation['formatted_name'],
-        'value' => variation['formatted_value']
-      }
+    # Use updated_timestamp if it exists, default to current time as fallback
+    etsy_updated_at = Time.at(txn["updated_timestamp"].to_i) rescue Time.current
+
+    queue_item = QueueItem.find_or_initialize_by(order_item_id: txn["transaction_id"], user_id: user_id)
+
+    # Only update if this is a new record, or the Etsy data is newer
+    if queue_item.new_record? || queue_item.updated_at < etsy_updated_at
+      variations = txn["variations"].map do |variation|
+        {
+          "title" => variation["formatted_name"],
+          "value" => variation["formatted_value"]
+        }
+      end
+
+      queue_item.name = txn["title"]
+      queue_item.reference_id = reference_id
+      queue_item.status = queue_item.new_record? ? 0 : queue_item.status
+      queue_item.priority = nil
+      queue_item.due_date = Time.at(txn["expected_ship_date"])
+      queue_item.user_id = user_id
+      queue_item.order_id = receipt["receipt_id"]
+      queue_item.order_item_id = txn["transaction_id"]
+      queue_item.quantity = txn["quantity"] || 1
+      queue_item.variations = variations
+
+      buyer_note = receipt["message_from_buyer"].to_s.strip
+      seller_note = receipt["message_from_seller"].to_s.strip
+      notes_parts = []
+      notes_parts << "**Buyer Note:**\n#{buyer_note}" unless buyer_note.empty?
+      # notes_parts << "**Seller Note:**\n#{seller_note}" unless seller_note.empty?
+      queue_item.notes = notes_parts.join("\n\n")
+
+      queue_item.save!
     end
-
-    queue_item.name = txn['title']
-    queue_item.reference_id = reference_id
-    queue_item.status = queue_item.new_record? ? 0 : queue_item.status
-    queue_item.priority = nil
-    queue_item.due_date = Time.at(txn['expected_ship_date'])
-    queue_item.notes = receipt['message_from_buyer']
-    queue_item.user_id = user_id
-    queue_item.order_id = receipt['receipt_id']
-    queue_item.order_item_id = txn['transaction_id']
-    queue_item.quantity = txn['quantity'] || 1
-    queue_item.variations = variations
-
-    queue_item.save!
   end
 end
