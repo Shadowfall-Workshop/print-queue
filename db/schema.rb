@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_16_020402) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_28_235259) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,6 +52,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_16_020402) do
     t.bigint "order_item_id"
     t.integer "quantity", default: 1, null: false
     t.jsonb "variations"
+    t.string "sku"
     t.index ["user_id"], name: "index_queue_items_on_user_id"
   end
 

@@ -5,29 +5,29 @@ class QueueItemsController < ApplicationController
   def index
     @queue_items = current_user.queue_items
 
-    # Display search results
-    @queue_items = @queue_items.search(params[:query]) if params[:query].present?
-  
-    # Default filter: Exclude completed items
-    @queue_items = @queue_items.where.not(status: "complete") unless params[:status].present? || params[:query].present?
-  
-    # Apply filtering if a status is provided
-    @queue_items = @queue_items.where(status: params[:status]) if params[:status].present?
-  
-    # Default sorting: By status (asc), then due_date (asc)
-    default_order = { status: :asc, due_date: :asc }
-  
-    # Apply sorting based on params
-    @queue_items = case params[:sort]
-                   when "updated"
-                     @queue_items.order(updated_at: :desc)
-                   when "due_date"
-                     @queue_items.order(due_date: :asc)
-                   when "status"
-                     @queue_items.order(status: :asc, due_date: :asc)
-                   else
-                     @queue_items.order(default_order)
-                   end
+    # Search filter
+    if params[:query].present?
+      @queue_items = @queue_items.search(params[:query])
+      sort_order = { updated_at: :desc }
+    else
+      # Status filter (exclude 'complete' by default unless filtering by status)
+      @queue_items = @queue_items.where.not(status: "complete") unless params[:status].present?
+      @queue_items = @queue_items.where(status: params[:status]) if params[:status].present?
+
+      # Sorting (if not searching)
+      sort_order = case params[:sort]
+                  when "updated"
+                    { updated_at: :desc }
+                  when "due_date"
+                    { due_date: :asc }
+                  when "status"
+                    { status: :asc, due_date: :asc }
+                  else
+                    { status: :asc, due_date: :asc }
+                  end
+    end
+
+    @queue_items = @queue_items.order(sort_order)
   end
 
   def show
@@ -77,6 +77,7 @@ class QueueItemsController < ApplicationController
   def queue_item_params
     params.require(:queue_item).permit(
       :name, 
+      :sku,
       :reference_id, 
       :status, 
       :priority, 
