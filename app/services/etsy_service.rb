@@ -142,6 +142,7 @@ class EtsyService
       queue_item.order_item_id = txn["transaction_id"]
       queue_item.quantity = txn["quantity"] || 1
       queue_item.variations = variations
+      queue_item.sku = txn["sku"]
 
       buyer_note = receipt["message_from_buyer"].to_s.strip
       seller_note = receipt["message_from_seller"].to_s.strip

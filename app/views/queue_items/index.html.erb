@@ -1,4 +1,4 @@
-<div class="navbar justify-content-center justify-content-md-between">
+<div class="navbar justify-content-center justify-content-md-between z-0">
   <%= bootstrap_form_with url: queue_items_path, method: :get, local: true do |f| %>
       <%= f.search_field :query, placeholder: 'Search queue items...', class: 'input-group', value: params[:query], append: f.primary('Search'), hide_label: true %>
   <% end %>
@@ -57,6 +57,7 @@
             </div>
           <% end %>
           <h5 class="card-title" ><%= item.name %></h5>
+          <h6><%= item.sku %></h6>
           <div><strong>Quantity:</strong> <%= item.quantity %></div>
           <% item.variations.each do |variation| %>
             <div class="variation">
