@@ -4,5 +4,5 @@
     "dockerfile": "Dockerfile"
   },
   "forwardPorts": [3000, 5432],
-  "postCreateCommand": "bundle install && sudo service postgresql start && bin/setup || true"
+  "postCreateCommand": "bundle install && sudo service postgresql start && sudo -u postgres psql -c \"ALTER USER postgres PASSWORD 'password';\" && bin/setup"
 }
