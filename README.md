@@ -3,8 +3,9 @@ To get Bootstrap to work you have to activate dartsass by running `bin/rails dar
 ToDo:
 -[X] Restyle Queue Item forms with bootstrap_forms
 -[X] Add Etsy Connection
--[ ] Remove old entries from database
--[ ] Limit view to 100 items
+-[X] Remove old entries from database
+-[X] Limit view to 100 items
+-[ ] Add Skip options using SKU to Etsy integration
 
 A new codespace should install and create everything but if you need a blank codespace:
 ```
