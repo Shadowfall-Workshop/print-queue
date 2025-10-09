@@ -4,8 +4,18 @@ development:
     schedule: "every minute"  # Every Minute for development testing
     queue: default
 
+  cleanup_items:
+    class: CleanupItemsJob
+    schedule: "every minute"  # Adjust frequency for dev; could also be "every 5 minutes" for testing
+    queue: default
+
 production:
   etsy_sync:
     class: EtsySyncJob
     schedule: "0,30 * * * *"  # At minute 0 and 30 of every hour
+    queue: default
+
+  cleanup_items:
+    class: CleanupItemsJob
+    schedule: "0 3 * * *"  # Every day at 3 AM
     queue: default

@@ -1,17 +1,34 @@
 To get Bootstrap to work you have to activate dartsass by running `bin/rails dartsass:install`
 
 ToDo:
-☐ Restyle Queue Item forms with bootstrap_forms
-☐ Add Etsy Connection
-☐ Figure out when to update Etsy order status when multiple Items are in the queue
+-[X] Restyle Queue Item forms with bootstrap_forms
+-[X] Add Etsy Connection
+-[X] Remove old entries from database
+-[X] Limit view to 100 items
+-[ ] Add Skip options using SKU to Etsy integration
 
+A new codespace should install and create everything but if you need a blank codespace:
+```
+bundle install
+sudo apt update
+sudo apt upgrade -y
+sudo apt install postgres
+sudo service postgresql start
+sudo su - postgres
+ALTER USER postgres WITH PASSWORD 'postgres';
+CREATE DATABASE print_queue_development OWNER postgres;
+CREATE DATABASE print_queue_development_cable OWNER postgres;
+CREATE DATABASE print_queue_development_queue OWNER postgres;
+\q
+exit
+rails db:create
+rails db:migrate
+```
 
-New Codespace code to run:
-`sudo service postgresql start`
-`bin/rails db:prepare`
+update config>environments>development to new host
 
-If issue with connection, switch to postgres user and login:
-`sudo -u postgres psql`
+Precompile assets for turborails and bootstrap:
+`rails assets:precompile`
 
-and update the password for the user:
-`ALTER USER postgres WITH PASSWORD 'password';`
+Create Test User and Queue_items with:
+`rails db:seed`

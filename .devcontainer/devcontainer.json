@@ -1,8 +1,12 @@
 {
-  "name": "Rails 8 + Postgres",
+  "name": "Rails + Postgres + Bootstrap",
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "forwardPorts": [3000, 5432],
-  "postCreateCommand": "bundle install && sudo service postgresql start && sudo -u postgres psql -c \"ALTER USER postgres PASSWORD 'password';\" && bin/setup"
+  "containerEnv": {
+    "POSTGRES_USER": "postgres",
+    "POSTGRES_PASSWORD": "postgres"
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "forwardPorts": [3000]
 }
