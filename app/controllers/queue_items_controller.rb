@@ -27,7 +27,7 @@ class QueueItemsController < ApplicationController
                   end
     end
 
-    @queue_items = @queue_items.order(sort_order)
+    @queue_items = @queue_items.order(sort_order).limit(100)
   end
 
   def show

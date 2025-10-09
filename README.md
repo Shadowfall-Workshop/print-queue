@@ -1,10 +1,10 @@
 To get Bootstrap to work you have to activate dartsass by running `bin/rails dartsass:install`
 
 ToDo:
-☐ Restyle Queue Item forms with bootstrap_forms
-☐ Add Etsy Connection
-☐ Figure out when to update Etsy order status when multiple Items are in the queue
-
+-[X] Restyle Queue Item forms with bootstrap_forms
+-[X] Add Etsy Connection
+-[ ] Remove old entries from database
+-[ ] Limit view to 100 items
 
 A new codespace should install and create everything but if you need a blank codespace:
 ```
@@ -29,3 +29,5 @@ update config>environments>development to new host
 Precompile assets for turborails and bootstrap:
 `rails assets:precompile`
 
+Create Test User and Queue_items with:
+`rails db:seed`
