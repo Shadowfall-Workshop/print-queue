@@ -19,7 +19,13 @@
 
     <%= f.submit "Update" %>
 <% end %>
+
 <hr>
+
+<%= link_to "Log in on a device", new_login_token_path, class: "btn btn-primary" %>
+
+<hr>
+
 <h4>Your API Keys:</h4>
 <div class="container mb-3">
 <% if current_user.api_keys.present? %>
