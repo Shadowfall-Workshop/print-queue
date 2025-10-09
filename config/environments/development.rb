@@ -7,9 +7,7 @@ Rails.application.configure do
   config.hosts << /.*\.app\.github\.dev/
 
   # Optional: set default host for URL generation
-  config.action_controller.default_url_options = {
-    host: 'glowing-carnival-g46pvwxjvgg4hpgq6-3000.app.github.dev'
-  }
+    config.action_controller.default_url_options = { host: 'https://special-acorn-wrx4qjvpq65xcg774-3000.app.github.dev' }
   
   # Make code changes take effect immediately without server restart.
   config.enable_reloading = true

@@ -1,40 +1,54 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 
-echo "===== Installing gems ====="
-bundle check || bundle install
+echo "===== Detecting Codespace URL and updating Rails config ====="
+if [ -n "$CODESPACE_NAME" ]; then
+  HOST_URL="https://${CODESPACE_NAME}-3000.app.github.dev"
+  DEV_FILE="config/environments/development.rb"
 
-echo "===== Updating apt packages ====="
-sudo apt update -y
-sudo apt upgrade -y
+  # Replace or append the default_url_options config
+  if grep -q "config.action_controller.default_url_options" "$DEV_FILE"; then
+    sed -i "s|config\.action_controller\.default_url_options.*|  config.action_controller.default_url_options = { host: '${HOST_URL}' }|" "$DEV_FILE"
+  else
+    sed -i "/^end$/i \  # Set default host for Codespaces\n  config.action_controller.default_url_options = { host: '${HOST_URL}' }\n" "$DEV_FILE"
+  fi
 
-echo "===== Installing PostgreSQL if missing ====="
-if ! command -v psql &> /dev/null; then
-    sudo apt install -y postgresql postgresql-contrib libpq-dev
+  echo "✅ Updated development.rb with host: ${HOST_URL}"
+else
+  echo "⚠️ Could not detect CODESPACE_NAME; skipping host update."
 fi
+
+echo "===== Updating system packages ====="
+sudo apt-get update -y
+sudo apt-get upgrade -y
+
+echo "===== Installing PostgreSQL 16 ====="
+# Add PostgreSQL APT repository for version 16
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo apt-get update -y
+sudo apt-get install -y postgresql-16 postgresql-client-16 libpq-dev
 
 echo "===== Starting PostgreSQL ====="
 sudo service postgresql start
 
-echo "===== Setting up PostgreSQL user ====="
-sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='postgres';" | grep -q 1 || \
-    sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+echo "===== Setting up PostgreSQL user and databases ====="
+# Run the same commands you'd enter manually inside the postgres shell
+sudo su - postgres <<'EOF'
+psql <<SQL
+ALTER USER postgres WITH PASSWORD 'postgres';
+CREATE DATABASE print_queue_development OWNER postgres;
+CREATE DATABASE print_queue_development_cable OWNER postgres;
+CREATE DATABASE print_queue_development_queue OWNER postgres;
+SQL
+exit
+EOF
 
-echo "===== Creating databases ====="
-DBS=("print_queue_development" "print_queue_development_cable" "print_queue_development_queue")
-for db in "${DBS[@]}"; do
-    if ! sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw "$db"; then
-        sudo -u postgres createdb -O postgres "$db"
-        echo "Created database $db"
-    else
-        echo "Database $db already exists"
-    fi
-done
+echo "===== Installing Ruby dependencies ====="
+bundle install
 
 echo "===== Running Rails setup ====="
-rails db:create db:migrate
-
-echo "===== Precompiling assets ====="
+rails db:migrate
 rails assets:precompile
 
 echo "===== Setup complete! ====="

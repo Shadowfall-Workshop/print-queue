@@ -6,12 +6,12 @@ ToDo:
 ☐ Figure out when to update Etsy order status when multiple Items are in the queue
 
 
-New Codespace code to run:
+A new codespace should install and create everything but if you need a blank codespace:
 ```
 bundle install
 sudo apt update
 sudo apt upgrade -y
-sudo apy install postgres
+sudo apt install postgres
 sudo service postgresql start
 sudo su - postgres
 ALTER USER postgres WITH PASSWORD 'postgres';
