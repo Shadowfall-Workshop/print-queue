@@ -7,11 +7,25 @@ ToDo:
 
 
 New Codespace code to run:
-`sudo service postgresql start`
-`bin/rails db:prepare`
+```
+bundle install
+sudo apt update
+sudo apt upgrade -y
+sudo apy install postgres
+sudo service postgresql start
+sudo su - postgres
+ALTER USER postgres WITH PASSWORD 'postgres';
+CREATE DATABASE print_queue_development OWNER postgres;
+CREATE DATABASE print_queue_development_cable OWNER postgres;
+CREATE DATABASE print_queue_development_queue OWNER postgres;
+\q
+exit
+rails db:create
+rails db:migrate
+```
 
-If issue with connection, switch to postgres user and login:
-`sudo -u postgres psql`
+update config>environments>development to new host
 
-and update the password for the user:
-`ALTER USER postgres WITH PASSWORD 'password';`
+Precompile assets for turborails and bootstrap:
+`rails assets:precompile`
+

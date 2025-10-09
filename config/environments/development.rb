@@ -8,7 +8,7 @@ Rails.application.configure do
 
   # Optional: set default host for URL generation
   config.action_controller.default_url_options = {
-    host: 'laughing-space-disco-x5x4gqr7799whgqx-3000.app.github.dev'
+    host: 'glowing-carnival-g46pvwxjvgg4hpgq6-3000.app.github.dev'
   }
   
   # Make code changes take effect immediately without server restart.
