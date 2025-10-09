@@ -22,6 +22,12 @@
     end
   end
 
+  # Login Tokens
+  resource :login_token, only: [:new] do
+    get "check_status/:id", to: "login_tokens#check_status", as: :check_status
+  end
+  get "/login/:token", to: "login_tokens#consume", as: :consume_login_token
+
   # Integrations:
 namespace :oauth do
   get "etsy/connect", to: "etsy#connect"

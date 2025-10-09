@@ -47,6 +47,9 @@ gem "bootstrap_form", "~> 5.4"
 # User authentication
 gem "devise", "~> 4.9"
 
+# QR code Generation
+gem "rqrcode"
+
 #gem 'etsy'
 
 group :development, :test do

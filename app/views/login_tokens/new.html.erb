@@ -1,0 +1,37 @@
+<div class="container my-5 text-center">
+  <h2>Log in on your phone</h2>
+  <p class="lead">Scan this QR code or use the link below to log in.</p>
+
+  <div class="qr-code bg-light p-2 rounded d-inline-block mb-3">
+    <%= raw @qr_code.as_svg(module_size: 6, standalone: true) %>
+  </div>
+
+  <p class="mb-3">This login token will expire in 10 minutes.</p>
+
+  <%= link_to "Open link manually", @login_url,
+              target: "_blank",
+              class: "btn btn-secondary mb-3" %>
+
+  <div>
+    <%= link_to "Generate new QR code", new_login_token_path,
+                class: "btn btn-primary" %>
+  </div>
+</div>
+
+<script>
+  const tokenId = "<%= @login_token.id %>";
+  if (tokenId) {
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`/login_token/check_status/${tokenId}`);
+        const data = await response.json();
+        if (data.consumed) {
+          clearInterval(interval);
+          window.location.href = "<%= root_path %>"; // redirect to home
+        }
+      } catch(e) {
+        console.error(e);
+      }
+    }, 2000); // poll every 2 seconds
+  }
+</script>
