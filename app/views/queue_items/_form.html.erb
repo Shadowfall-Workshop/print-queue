@@ -9,7 +9,10 @@
         </div>
     <% end %>
     
-    <%= form.text_field :name, class: "form-control" %>
+    <div class="row">
+        <div class="col-sm-6"><%= form.text_field :name, class: "form-control col-sm-6" %></div>
+        <div class="col-sm-6"><%= form.text_field :sku, class: "form-control col-sm-6", label: "SKU" %></div>
+    </div>
 
     <div id="variations">
         <label for="variations" class="form-label">Variations</label>
