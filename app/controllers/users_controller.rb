@@ -1,6 +1,10 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
 
+  def integrations
+    render 'integrations/index'
+  end
+  
   def sync_etsy_orders
     external_account = current_user.external_accounts.find_by(provider: "etsy")
 
@@ -14,4 +18,5 @@ class UsersController < ApplicationController
 
     redirect_to queue_items_path
   end
+
 end

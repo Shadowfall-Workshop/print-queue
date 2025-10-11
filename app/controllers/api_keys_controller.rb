@@ -11,17 +11,17 @@ class ApiKeysController < ApplicationController
       @api_key = current_user.api_keys.new(api_key_params)
     
       if @api_key.save
-        redirect_to edit_user_registration_path, notice: 'API Key successfully generated.'
+        redirect_to user_integrations_path, notice: 'API Key successfully generated.'
       else
         puts @api_key.errors.full_messages # Debugging output
-        redirect_to edit_user_registration_path, alert: 'Error generating API key.'
+        redirect_to user_integrations_path, alert: 'Error generating API key.'
       end
     end
   
     def destroy
       @api_key = current_user.api_keys.find(params[:id])
       @api_key.destroy
-      redirect_to edit_user_registration_path, notice: 'API key deleted successfully.'
+      redirect_to user_integrations_path, notice: 'API key deleted successfully.'
     end
   
     private

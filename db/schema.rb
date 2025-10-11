@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_28_235259) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_11_084759) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -35,7 +35,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_28_235259) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "external_shop_id"
+    t.string "external_shop_name"
+    t.jsonb "ignored_skus", default: [], null: false
     t.index ["user_id"], name: "index_external_accounts_on_user_id"
+  end
+
+  create_table "login_tokens", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token", null: false
+    t.datetime "expires_at", null: false
+    t.string "purpose"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token"], name: "index_login_tokens_on_token", unique: true
+    t.index ["user_id"], name: "index_login_tokens_on_user_id"
   end
 
   create_table "queue_items", force: :cascade do |t|
@@ -82,6 +95,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_28_235259) do
 
   add_foreign_key "api_keys", "users"
   add_foreign_key "external_accounts", "users"
+  add_foreign_key "login_tokens", "users"
   add_foreign_key "queue_items", "users"
   add_foreign_key "sync_logs", "external_accounts"
 end
