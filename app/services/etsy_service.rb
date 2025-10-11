@@ -43,10 +43,15 @@ class EtsyService
 
   # Fetch shop info
   def fetch_shop_info
-    # Refresh token if expired
     token = access_token
 
-    uri = URI("#{API_BASE_URL}/users/#{@user_id}/shops")
+    # If we already have a shop ID, fetch it directly
+    if @external_account.external_shop_id.present?
+      uri = URI("#{API_BASE_URL}/shops/#{@external_account.external_shop_id}")
+    else
+      # Otherwise, list the shops for the user (should only be 1 for standard accounts)
+      uri = URI("#{API_BASE_URL}/users/#{@user_id}/shops")
+    end
 
     req = Net::HTTP::Get.new(uri)
     req["Authorization"] = "Bearer #{@access_token}"
@@ -59,8 +64,15 @@ class EtsyService
     json = JSON.parse(res.body)
     Rails.logger.debug "[Etsy OAuth] full shop info response: #{json.inspect}"
 
-    if json["shop_id"]
-      json
+    # If we queried by user, grab the first shop
+    shop = json["results"]&.first || json
+    if shop && shop["shop_id"]
+      @external_account.update!(
+        external_shop_id: shop["shop_id"].to_s,
+        external_shop_name: shop["shop_name"]
+      )
+      Rails.logger.info "[Etsy OAuth] Synced shop: #{shop['shop_name']} (#{shop['shop_id']})"
+      shop
     else
       Rails.logger.warn "[Etsy OAuth] Unexpected shop info format: #{json.inspect}"
       nil
@@ -118,6 +130,12 @@ class EtsyService
   def create_or_update_queue_item(user_id, receipt, txn)
     reference_id = "Etsy Order: #{receipt['receipt_id']}"
 
+    # Skip if this SKU is in the Etsy integration's ignored SKUs
+    if txn["sku"].present? && @external_account.ignored_skus&.include?(txn["sku"])
+      Rails.logger.info "[EtsyService] Ignoring SKU #{txn['sku']} for user #{user_id}"
+      return
+    end
+
     # Use updated_timestamp if it exists, default to current time as fallback
     etsy_updated_at = Time.at(txn["updated_timestamp"].to_i) rescue Time.current
 
@@ -136,7 +154,7 @@ class EtsyService
       queue_item.reference_id = reference_id
       queue_item.status = queue_item.new_record? ? 0 : queue_item.status
       queue_item.priority = nil
-      queue_item.due_date = Time.at(txn["expected_ship_date"])
+      queue_item.due_date = Time.at(txn["expected_ship_date"]) if txn["expected_ship_date"]
       queue_item.user_id = user_id
       queue_item.order_id = receipt["receipt_id"]
       queue_item.order_item_id = txn["transaction_id"]
@@ -145,10 +163,8 @@ class EtsyService
       queue_item.sku = txn["sku"]
 
       buyer_note = receipt["message_from_buyer"].to_s.strip
-      seller_note = receipt["message_from_seller"].to_s.strip
       notes_parts = []
       notes_parts << "**Buyer Note:**\n#{buyer_note}" unless buyer_note.empty?
-      # notes_parts << "**Seller Note:**\n#{seller_note}" unless seller_note.empty?
       queue_item.notes = notes_parts.join("\n\n")
 
       queue_item.save!

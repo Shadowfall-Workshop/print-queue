@@ -10,9 +10,6 @@
   # Root path
   root 'queue_items#index'
 
-  # Redirect /queue_items to the root path
-  #get '/queue_items', to: redirect('/')
-
   resources :queue_items, only: [:index, :new, :create, :edit, :update, :show, :destroy]
   resources :api_keys, only: [:new, :create, :destroy]
 
@@ -29,11 +26,14 @@
   get "/login/:token", to: "login_tokens#consume", as: :consume_login_token
 
   # Integrations:
-namespace :oauth do
-  get "etsy/connect", to: "etsy#connect"
-  get "etsy/callback", to: "etsy#callback"
-  delete "etsy/disconnect", to: "etsy#disconnect"
-end
+  resources :external_accounts, only: [:update]
+  get 'users/integrations', to: 'users#integrations', as: :user_integrations
+
+  namespace :oauth do
+    get "etsy/connect", to: "etsy#connect"
+    get "etsy/callback", to: "etsy#callback"
+    delete "etsy/disconnect", to: "etsy#disconnect"
+  end
 
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

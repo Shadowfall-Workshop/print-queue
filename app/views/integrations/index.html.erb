@@ -1,0 +1,64 @@
+<h1>Integrations</h1>
+<hr>
+<div class="container">
+  <h2>Etsy Integration</h2>
+
+  <% etsy_account = current_user.external_accounts.find { |acc| acc.provider == "etsy" } %>
+
+<% if etsy_account.present? %>
+  <div class="card mb-2">
+    <div class="card-body">
+      Connected to: <%= etsy_account.external_shop_name %> | ID: <%= etsy_account.external_shop_id %>
+
+      <!-- Ignored SKUs form -->
+      <%= form_with model: etsy_account, url: external_account_path(etsy_account), method: :patch, local: true do |f| %>
+        <div class="mb-2">
+          <%= f.text_area :ignored_skus_text, value: etsy_account.ignored_skus_text, placeholder: "One SKU per line", class: "form-control font-monospace", rows: 4 %>
+        </div>
+        <%= f.submit "Save", class: "btn btn-primary" %>
+      <% end %>
+    </div>
+    <div class="card-footer">
+      <div class="d-flex justify-content-between">    
+        <% if user_signed_in? && current_user.external_accounts.find_by(provider: "etsy") %>
+          <%= button_to "Sync Etsy Orders", sync_etsy_orders_users_path, method: :post, class: "btn btn-primary" %>
+        <% end %>
+
+        <%= button_to "Disconnect Etsy Shop", oauth_etsy_disconnect_path, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "btn btn-danger" %>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <p>Not connected to Etsy yet.</p>
+  <%= link_to "Connect Etsy", oauth_etsy_connect_path %>
+<% end %>
+</div>
+<hr>
+<div class="container">
+<h2>API Keys:</h2>
+
+<% @api_key = current_user.api_keys.new %>
+<%= bootstrap_form_with model: @api_key do |f| %>
+    <%= f.text_field :description, label_as_placeholder: true, append: f.primary('Generate API Key'), input_group_class: 'input-group'  %>
+<% end %>
+
+  <% if current_user.api_keys.present? %>
+    <% current_user.api_keys.where.not(id: nil).each do |key| %>
+      <div class="api-key card mb-2">
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+            <div><strong>Description:</strong> <%= key.description %></div>
+            <div><%= key.key %></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <%= button_to 'Delete', api_key_path(key), method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <p>You do not have any API keys. Generate one below</p>
+  <% end %>
+</div>

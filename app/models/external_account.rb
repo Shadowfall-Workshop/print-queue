@@ -1,6 +1,7 @@
 class ExternalAccount < ApplicationRecord
   belongs_to :user
   has_many :sync_logs, dependent: :nullify
+  attribute :ignored_skus, :jsonb, default: []
 
   validates :provider, presence: true
 
@@ -26,5 +27,13 @@ class ExternalAccount < ApplicationRecord
       Rails.logger.error("[Etsy OAuth] Token refresh failed: #{response}")
       raise "Failed to refresh Etsy token: #{response["error_description"] || 'unknown error'}"
     end
+  end
+
+  def ignored_skus_text
+    (ignored_skus || []).join("\n")
+  end
+
+  def ignored_skus_text=(value)
+    self.ignored_skus = value.to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
   end
 end
