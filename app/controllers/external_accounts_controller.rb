@@ -13,7 +13,7 @@ class ExternalAccountsController < ApplicationController
   private
 
   def external_account_params
-    # permit ignored_skus_text here
-    params.require(:external_account).permit(:ignored_skus_text)
+    # permit ignored_skus_text and due_date_adjustment
+    params.require(:external_account).permit(:ignored_skus_text, :due_date_adjustment)
   end
 end
