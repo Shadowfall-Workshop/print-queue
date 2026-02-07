@@ -5,7 +5,7 @@ ToDo:
 -[X] Add Etsy Connection
 -[X] Remove old entries from database
 -[X] Limit view to 100 items
--[ ] Add Skip options using SKU to Etsy integration
+-[X ] Add Skip options using SKU to Etsy integration
 
 A new codespace should install and create everything but if you need a blank codespace:
 ```
