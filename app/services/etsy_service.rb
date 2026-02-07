@@ -154,7 +154,7 @@ class EtsyService
       queue_item.reference_id = reference_id
       queue_item.status = queue_item.new_record? ? 0 : queue_item.status
       queue_item.priority = nil
-      queue_item.due_date = Time.at(txn["expected_ship_date"]) if txn["expected_ship_date"]
+      queue_item.due_date = Time.at(txn["expected_ship_date"]) + @external_account.due_date_adjustment.days if txn["expected_ship_date"]
       queue_item.user_id = user_id
       queue_item.order_id = receipt["receipt_id"]
       queue_item.order_item_id = txn["transaction_id"]

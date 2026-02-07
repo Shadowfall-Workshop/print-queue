@@ -2,6 +2,7 @@ class ExternalAccount < ApplicationRecord
   belongs_to :user
   has_many :sync_logs, dependent: :nullify
   attribute :ignored_skus, :jsonb, default: []
+  attribute :due_date_adjustment, :integer, default: 0
 
   validates :provider, presence: true
 

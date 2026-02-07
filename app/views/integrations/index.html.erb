@@ -9,11 +9,15 @@
   <div class="card mb-2">
     <div class="card-body">
       Connected to: <%= etsy_account.external_shop_name %> | ID: <%= etsy_account.external_shop_id %>
+      <hr>
 
-      <!-- Ignored SKUs form -->
-      <%= form_with model: etsy_account, url: external_account_path(etsy_account), method: :patch, local: true do |f| %>
+      <!-- Etsy Integration Settings -->
+      <%= bootstrap_form_with model: etsy_account, url: external_account_path(etsy_account), method: :patch, local: true do |f| %>
         <div class="mb-2">
-          <%= f.text_area :ignored_skus_text, value: etsy_account.ignored_skus_text, placeholder: "One SKU per line", class: "form-control font-monospace", rows: 4 %>
+          <%= f.text_area :ignored_skus_text, value: etsy_account.ignored_skus_text, label: "Ignored SKUs (One SKU per line)", class: "form-control font-monospace", rows: 4 %>
+        </div>
+        <div class="mb-2">
+          <%= f.number_field :due_date_adjustment, value: etsy_account.due_date_adjustment, label: "Due Date Adjustment (days)", class: "form-control" %>
         </div>
         <%= f.submit "Save", class: "btn btn-primary" %>
       <% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_11_084759) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_07_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -37,6 +37,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_11_084759) do
     t.string "external_shop_id"
     t.string "external_shop_name"
     t.jsonb "ignored_skus", default: [], null: false
+    t.integer "due_date_adjustment", limit: 2, default: 0, null: false
     t.index ["user_id"], name: "index_external_accounts_on_user_id"
   end
 
