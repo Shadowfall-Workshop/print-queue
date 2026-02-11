@@ -40,7 +40,7 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
 gem 'dartsass-rails'
-gem "bootstrap", "~> 5.3.3"
+gem "bootstrap", "~> 5.3.5"
 # Easily generate bootstrap styling on forms [https://github.com/bootstrap-ruby/bootstrap_form]
 gem "bootstrap_form", "~> 5.4"
 
