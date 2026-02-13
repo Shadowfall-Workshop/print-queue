@@ -55,7 +55,7 @@ class EtsyService
 
     req = Net::HTTP::Get.new(uri)
     req["Authorization"] = "Bearer #{@access_token}"
-    req["x-api-key"] = ENV["ETSY_API_KEYSTRING"]
+    req["x-api-key"] = "#{ENV["ETSY_API_KEYSTRING"]}:#{ENV["ETSY_API_SECRET"]}"
 
     res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
       http.request(req)
@@ -98,7 +98,7 @@ class EtsyService
     # Make the request
     req = Net::HTTP::Get.new(uri)
     req["Authorization"] = "Bearer #{@external_account.access_token}"
-    req["x-api-key"] = ENV["ETSY_API_KEYSTRING"]
+    req["x-api-key"] = "#{ENV["ETSY_API_KEYSTRING"]}:#{ENV["ETSY_API_SECRET"]}"
 
     res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
       http.request(req)
