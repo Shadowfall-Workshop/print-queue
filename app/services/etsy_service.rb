@@ -90,7 +90,7 @@ class EtsyService
     token = access_token
 
   # Create the API URL
-  min_created = (Time.now - 48.hours).to_i
+  min_created = (Time.now - 5.days).to_i
   max_created = (Time.now - 5.minutes).to_i
 
   uri = URI("#{API_BASE_URL}/shops/#{@external_account.external_shop_id}/receipts?min_created=#{min_created}&max_created=#{max_created}")
