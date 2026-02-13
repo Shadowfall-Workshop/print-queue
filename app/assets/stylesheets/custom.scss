@@ -1,3 +1,11 @@
+:root{
+  --etsy-primary: #eb6d20;
+}
+
+.border-etsy-primary {
+  border-color: var(--etsy-primary) !important;
+}
+
 .btn-contrast,
 [data-bs-theme="light"] .btn-contrast {
   @include button-variant($body-color, $body-color);

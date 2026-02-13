@@ -82,18 +82,21 @@ class EtsyService
     nil
   end
 
+  # --------------------------------------------------------------------------------------
   # Fetch receipts (orders) from Etsy
+  # https://openapi.etsy.com/v3/application/shops/{shop_id}/receipts
+  # --------------------------------------------------------------------------------------
   def fetch_receipts
     return unless @external_account&.access_token && @external_account&.external_shop_id
 
     # Refresh token if expired
     token = access_token
 
-  # Create the API URL
-  min_created = (Time.now - 5.days).to_i
-  max_created = (Time.now - 5.minutes).to_i
+    # Create the API URL
+    min_created = (Time.now - 2.days).to_i
+    max_created = (Time.now - 5.minutes).to_i
 
-  uri = URI("#{API_BASE_URL}/shops/#{@external_account.external_shop_id}/receipts?min_created=#{min_created}&max_created=#{max_created}")
+    uri = URI("#{API_BASE_URL}/shops/#{@external_account.external_shop_id}/receipts?min_created=#{min_created}&max_created=#{max_created}&limit=100")
 
     # Make the request
     req = Net::HTTP::Get.new(uri)
@@ -105,7 +108,11 @@ class EtsyService
     end
 
     json = JSON.parse(res.body)
-    Rails.logger.debug "[EtsyService] Receipts response: #{json.inspect}"
+    # Log the number of receipts:
+    Rails.logger.info "[EtsyService] Fetched #{json['count']} receipts"
+    # Log the receipt IDs and their created dates for debugging:
+    Rails.logger.info "[EtsyService] Receipt IDs and dates: #{json['results']&.map { |r| { id: r['receipt_id'], date: Time.at(r['created_timestamp']).to_s } }.inspect}"
+
 
     json
   rescue => e
@@ -113,6 +120,9 @@ class EtsyService
     nil
   end
 
+  # --------------------------------------------------------------------------------------
+  # Sync orders to QueueItems
+  # -------------------------------------------------------------------------------------- 
   def sync_orders_to_queue_items(user_id)
     receipts = fetch_receipts["results"]
     return unless receipts
@@ -120,18 +130,65 @@ class EtsyService
     receipts.each do |receipt|
       receipt["transactions"].each do |txn|
         next if txn["is_digital"] == true  # Skip digital items
+        Rails.logger.debug "[EtsyService] Processing transaction #{txn['transaction_id']} for receipt #{receipt['receipt_id']}"
         create_or_update_queue_item(user_id, receipt, txn)
       end
     end
   end
 
+
+  # --------------------------------------------------------------------------------------
+  # Fetch Single Receipt (order) from Etsy  
+  # https://openapi.etsy.com/v3/application/shops/{shop_id}/receipts/{receipt_id}
+  # --------------------------------------------------------------------------------------
+  def fetch_receipt(receipt_id)
+    return unless @external_account&.access_token && @external_account&.external_shop_id
+
+    # Refresh token if expired
+    token = access_token
+
+    # Create the API URL 
+    uri = URI("#{API_BASE_URL}/shops/#{@external_account.external_shop_id}/receipts/#{receipt_id}")
+
+    # Make the request
+    req = Net::HTTP::Get.new(uri)
+    req["Authorization"] = "Bearer #{@external_account.access_token}"
+    req["x-api-key"] = "#{ENV["ETSY_API_KEYSTRING"]}:#{ENV["ETSY_API_SECRET"]}"
+
+    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http.request(req)
+    end
+
+    json = JSON.parse(res.body)
+    # Log the receipt:
+    Rails.logger.info "[EtsyService #fetch_receipt ID:#{receipt_id}] #{json.inspect}"
+
+    json
+  rescue => e
+    Rails.logger.error "[EtsyService #fetch_receipt ID:#{receipt_id}] fetch_receipt error: #{e.class} - #{e.message}"
+    nil
+  end
+  
+  # --------------------------------------------------------------------------------------
+  # Add single order to QueueItems
+  # -------------------------------------------------------------------------------------- 
+  def sync_order_to_queue_items(user_id, receipt_id)
+    receipt = fetch_receipt(receipt_id)
+    return unless receipt
+
+    receipt["transactions"].each do |txn|
+        next if txn["is_digital"] == true  # Skip digital items
+        Rails.logger.debug "[EtsyService] Processing transaction #{txn['transaction_id']} for receipt #{receipt['receipt_id']}"
+        create_or_update_queue_item(user_id, receipt, txn)
+    end
+  end
   private
 
   def create_or_update_queue_item(user_id, receipt, txn)
     reference_id = "Etsy Order: #{receipt['receipt_id']}"
 
     # Skip if this SKU is in the Etsy integration's ignored SKUs
-    if txn["sku"].present? && @external_account.ignored_skus&.include?(txn["sku"])
+    if txn["sku"].present? && @external_account.settings["ignored_skus"]&.include?(txn["sku"])
       Rails.logger.info "[EtsyService] Ignoring SKU #{txn['sku']} for user #{user_id}"
       return
     end
@@ -154,7 +211,7 @@ class EtsyService
       queue_item.reference_id = reference_id
       queue_item.status = queue_item.new_record? ? 0 : queue_item.status
       queue_item.priority = nil
-      queue_item.due_date = Time.at(txn["expected_ship_date"]) + @external_account.due_date_adjustment.days if txn["expected_ship_date"]
+      queue_item.due_date = Time.at(txn["expected_ship_date"]) + @external_account.settings["due_date_adjustment"].to_i.days if txn["expected_ship_date"]
       queue_item.user_id = user_id
       queue_item.order_id = receipt["receipt_id"]
       queue_item.order_item_id = txn["transaction_id"]
