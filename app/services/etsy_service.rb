@@ -121,6 +121,23 @@ class EtsyService
   end
 
   # --------------------------------------------------------------------------------------
+  # Sync orders to QueueItems
+  # -------------------------------------------------------------------------------------- 
+  def sync_orders_to_queue_items(user_id)
+    receipts = fetch_receipts["results"]
+    return unless receipts
+
+    receipts.each do |receipt|
+      receipt["transactions"].each do |txn|
+        next if txn["is_digital"] == true  # Skip digital items
+        Rails.logger.debug "[EtsyService] Processing transaction #{txn['transaction_id']} for receipt #{receipt['receipt_id']}"
+        create_or_update_queue_item(user_id, receipt, txn)
+      end
+    end
+  end
+
+
+  # --------------------------------------------------------------------------------------
   # Fetch Single Receipt (order) from Etsy  
   # https://openapi.etsy.com/v3/application/shops/{shop_id}/receipts/{receipt_id}
   # --------------------------------------------------------------------------------------
@@ -165,30 +182,13 @@ class EtsyService
         create_or_update_queue_item(user_id, receipt, txn)
     end
   end
-
-  # --------------------------------------------------------------------------------------
-  # Sync orders to QueueItems
-  # -------------------------------------------------------------------------------------- 
-  def sync_orders_to_queue_items(user_id)
-    receipts = fetch_receipts["results"]
-    return unless receipts
-
-    receipts.each do |receipt|
-      receipt["transactions"].each do |txn|
-        next if txn["is_digital"] == true  # Skip digital items
-        Rails.logger.debug "[EtsyService] Processing transaction #{txn['transaction_id']} for receipt #{receipt['receipt_id']}"
-        create_or_update_queue_item(user_id, receipt, txn)
-      end
-    end
-  end
-
   private
 
   def create_or_update_queue_item(user_id, receipt, txn)
     reference_id = "Etsy Order: #{receipt['receipt_id']}"
 
     # Skip if this SKU is in the Etsy integration's ignored SKUs
-    if txn["sku"].present? && @external_account.ignored_skus&.include?(txn["sku"])
+    if txn["sku"].present? && @external_account.settings["ignored_skus"]&.include?(txn["sku"])
       Rails.logger.info "[EtsyService] Ignoring SKU #{txn['sku']} for user #{user_id}"
       return
     end
@@ -211,7 +211,7 @@ class EtsyService
       queue_item.reference_id = reference_id
       queue_item.status = queue_item.new_record? ? 0 : queue_item.status
       queue_item.priority = nil
-      queue_item.due_date = Time.at(txn["expected_ship_date"]) + @external_account.due_date_adjustment.days if txn["expected_ship_date"]
+      queue_item.due_date = Time.at(txn["expected_ship_date"]) + @external_account.settings["due_date_adjustment"].to_i.days if txn["expected_ship_date"]
       queue_item.user_id = user_id
       queue_item.order_id = receipt["receipt_id"]
       queue_item.order_item_id = txn["transaction_id"]

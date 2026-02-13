@@ -20,12 +20,14 @@
     </p>
     <h3>Sync Settings</h3>
     <%= bootstrap_form_with model: etsy_account, url: external_account_path(etsy_account), method: :patch, local: true do |f| %>
-      <div class="mb-2">
-        <%= f.text_area :ignored_skus_text, value: etsy_account.ignored_skus_text, label: "Ignored SKUs (One SKU per line)", class: "form-control font-monospace", rows: 4 %>
-      </div>
-      <div class="mb-2">
-        <%= f.number_field :due_date_adjustment, value: etsy_account.due_date_adjustment, label: "Due Date Adjustment (days)", class: "form-control" %>
-      </div>
+      <%= f.fields_for :settings, etsy_account.settings do |s| %>
+        <div class="mb-2">
+          <%= s.text_area :ignored_skus, value: etsy_account.settings["ignored_skus"], label: "Ignored SKUs (One SKU per line)", class: "form-control font-monospace", rows: 4 %>
+        </div>
+        <div class="mb-2">
+          <%= s.number_field :due_date_adjustment, value: etsy_account.settings["due_date_adjustment"], label: "Due Date Adjustment (days)", class: "form-control" %>
+        </div>
+      <% end %>
       <%= f.submit "Save Settings", class: "btn btn-primary" %>
     <% end %>
 

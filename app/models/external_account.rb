@@ -1,10 +1,28 @@
 class ExternalAccount < ApplicationRecord
   belongs_to :user
   has_many :sync_logs, dependent: :nullify
-  attribute :ignored_skus, :jsonb, default: []
-  attribute :due_date_adjustment, :integer, default: 0
+  attribute :settings, :jsonb, default: {}
 
   validates :provider, presence: true
+
+  # Settings accessors
+  def ignored_skus
+    (settings["ignored_skus"] || [])
+  end
+
+  def ignored_skus=(value)
+    self.settings ||= {}
+    self.settings["ignored_skus"] = value
+  end
+
+  def due_date_adjustment
+    (settings["due_date_adjustment"] || 0).to_i
+  end
+
+  def due_date_adjustment=(value)
+    self.settings ||= {}
+    self.settings["due_date_adjustment"] = value.to_i
+  end
 
   def refresh_if_needed!
     return if provider != "etsy"
@@ -31,7 +49,7 @@ class ExternalAccount < ApplicationRecord
   end
 
   def ignored_skus_text
-    (ignored_skus || []).join("\n")
+    ignored_skus.join("\n")
   end
 
   def ignored_skus_text=(value)
