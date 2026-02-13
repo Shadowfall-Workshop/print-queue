@@ -1,41 +1,71 @@
 <h1>Integrations</h1>
 <hr>
-<div class="container">
+<div class="container border border-etsy-primary rounded p-4  mb-4">
   <h2>Etsy Integration</h2>
-
   <% etsy_account = current_user.external_accounts.find { |acc| acc.provider == "etsy" } %>
 
-<% if etsy_account.present? %>
-  <div class="card mb-2">
-    <div class="card-body">
+  <% if etsy_account.present? %>
+  
+    <div class="d-flex justify-content-between mb-3">
       Connected to: <%= etsy_account.external_shop_name %> | ID: <%= etsy_account.external_shop_id %>
-      <hr>
-
-      <!-- Etsy Integration Settings -->
-      <%= bootstrap_form_with model: etsy_account, url: external_account_path(etsy_account), method: :patch, local: true do |f| %>
-        <div class="mb-2">
-          <%= f.text_area :ignored_skus_text, value: etsy_account.ignored_skus_text, label: "Ignored SKUs (One SKU per line)", class: "form-control font-monospace", rows: 4 %>
-        </div>
-        <div class="mb-2">
-          <%= f.number_field :due_date_adjustment, value: etsy_account.due_date_adjustment, label: "Due Date Adjustment (days)", class: "form-control" %>
-        </div>
-        <%= f.submit "Save", class: "btn btn-primary" %>
-      <% end %>
+      <%= link_to "Disconnect Etsy Shop", oauth_etsy_disconnect_path, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "link-danger" %>
     </div>
-    <div class="card-footer">
-      <div class="d-flex justify-content-between">    
-        <% if user_signed_in? && current_user.external_accounts.find_by(provider: "etsy") %>
-          <%= button_to "Sync Etsy Orders", sync_etsy_orders_users_path, method: :post, class: "btn btn-primary" %>
-        <% end %>
+    <p>
+      Your Etsy orders will be synced automatically:
+      <ul>
+        <li>Sync runs every half-hour.</li>
+        <li>Sync is limited to 100 orders </li>
+        <li>Sync is only performed for orders that are at least 5 minutes old.</li>
+      </ul>
+    </p>
+    <h3>Sync Settings</h3>
+    <%= bootstrap_form_with model: etsy_account, url: external_account_path(etsy_account), method: :patch, local: true do |f| %>
+      <div class="mb-2">
+        <%= f.text_area :ignored_skus_text, value: etsy_account.ignored_skus_text, label: "Ignored SKUs (One SKU per line)", class: "form-control font-monospace", rows: 4 %>
+      </div>
+      <div class="mb-2">
+        <%= f.number_field :due_date_adjustment, value: etsy_account.due_date_adjustment, label: "Due Date Adjustment (days)", class: "form-control" %>
+      </div>
+      <%= f.submit "Save Settings", class: "btn btn-primary" %>
+    <% end %>
 
-        <%= button_to "Disconnect Etsy Shop", oauth_etsy_disconnect_path, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "btn btn-danger" %>
+    <hr>
+    
+    <!-- Sync All Etsy Orders -->
+    <div class="mb-3">
+      <h3>Sync Etsy Orders</h3>
+      <div class="row">
+        <div class="col-md-8">
+          <p>
+            This will fetch recent orders from Etsy and create QueueItems for any new ones. It will not create duplicates if run multiple times.
+          </p>
+        </div>
+        <div class="col-md-4 text-end">
+          <% if user_signed_in? && current_user.external_accounts.find_by(provider: "etsy") %>
+            <%= button_to "Sync Etsy Orders", sync_etsy_orders_users_path, method: :post, class: "btn btn-primary" %>
+          <% end %>
+        </div>
       </div>
     </div>
-  </div>
-<% else %>
-  <p>Not connected to Etsy yet.</p>
-  <%= link_to "Connect Etsy", oauth_etsy_connect_path %>
-<% end %>
+
+    <hr>
+    
+    <!-- Sync Single Etsy Order -->
+    <div class="mb-3">
+      <h3>Sync Single Etsy Order</h3>
+      <p>
+        This allows you to sync a single Etsy order by entering its Receipt ID. Useful for testing or if you want to sync a specific order without fetching all recent orders.
+      </p>
+      <%= bootstrap_form_with url: sync_single_etsy_order_users_path, method: :post, local: true do |f| %>
+        <%= f.text_field :receipt_id, append: f.primary('Sync Order'), hide_label: true, placeholder: "Enter Etsy Receipt ID", input_group_class: 'input-group' %>
+      <% end %>
+    </div>
+    
+  <% else %>
+    <p>Not connected to Etsy yet.</p>
+    <%= link_to "Connect Etsy", oauth_etsy_connect_path %>
+  <% end %>
+
 </div>
 <hr>
 <div class="container">

@@ -3,6 +3,7 @@
   
   resources :users, only: [] do
     collection do
+      post :sync_single_etsy_order
       post :sync_etsy_orders
     end
   end
